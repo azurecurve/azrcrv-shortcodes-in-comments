@@ -1,0 +1,433 @@
+<?php
+/**
+ * ------------------------------------------------------------------------------
+ * Plugin Name: Shortcodes in Comments
+ * Description: Allows shortcodes to be used in comments
+ * Version: 1.0.0
+ * Author: azurecurve
+ * Author URI: https://development.azurecurve.co.uk/classicpress-plugins/
+ * Plugin URI: https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-comments
+ * Text Domain: shortcodes-in-comments
+ * Domain Path: /languages
+ * ------------------------------------------------------------------------------
+ * This is free software released under the terms of the General Public License,
+ * version 2, or later. It is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Full
+ * text of the license is available at https://www.gnu.org/licenses/gpl-2.0.html.
+ * ------------------------------------------------------------------------------
+ */
+
+// include plugin menu
+require_once(dirname( __FILE__).'/pluginmenu/menu.php');
+
+// Prevent direct access.
+if (!defined('ABSPATH')){
+	die();
+}
+
+/**
+ * Setup actions and filters.
+ *
+ * @since 1.0.0
+ *
+ */
+// register activation hook
+register_activation_hook(__FILE__, 'azrcrv_sic_set_default_options');
+
+// add actions
+add_action('admin_menu', 'azrcrv_sic_create_admin_menu');
+add_action('admin_post_azrcrv_sic_save_options', 'azrcrv_sic_save_options');
+add_action('network_admin_menu', 'azrcrv_sic_create_network_admin_menu');
+add_action('network_admin_edit_azrcrv_sic_save_network_options', 'azrcrv_sic_save_network_options');
+
+// add filters
+add_filter('plugin_action_links', 'azrcrv_sic_add_plugin_action_link', 10, 2);
+add_filter('comments_template', 'azrcrv_sic_remove_unallowed_shortcodes');
+//add_filter('comment_text', 'shortcode_unautop');
+add_filter('comment_text', 'do_shortcode');
+add_filter('dynamic_sidebar', 'azrcrv_sic_restore_all_shortcodes');
+
+/**
+ * Set default options for plugin.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_set_default_options($networkwide){
+	
+	$option_name = 'azrcrv-sic';
+	
+	$new_options = array(
+				'allowed-shortcodes' => 'b,i,u,center,centre,strike,quote,color,size,img,url,link,ol,ul,li,code',
+			);
+	
+	// set defaults for multi-site
+	if (function_exists('is_multisite') && is_multisite()){
+		// check if it is a network activation - if so, run the activation function for each blog id
+		if ($networkwide){
+			global $wpdb;
+
+			$blog_ids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
+			$original_blog_id = get_current_blog_id();
+
+			foreach ($blog_ids as $blog_id){
+				switch_to_blog($blog_id);
+
+				if (get_option($option_name) === false){
+					add_option($option_name, $new_options);
+				}
+			}
+
+			switch_to_blog($original_blog_id);
+		}else{
+			if (get_option($option_name) === false){
+				add_option($option_name, $new_options);
+			}
+		}
+		if (get_site_option($option_name) === false){
+			add_option($option_name, $new_options);
+		}
+	}
+	//set defaults for single site
+	else{
+		if (get_option($option_name) === false){
+			add_option($option_name, $new_options);
+		}
+	}
+}
+
+/**
+ * Add Shortcodes in Comments action link on plugins page.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_add_plugin_action_link($links, $file){
+	static $this_plugin;
+
+	if (!$this_plugin){
+		$this_plugin = plugin_basename(__FILE__);
+	}
+
+	if ($file == $this_plugin){
+		$settings_link = '<a href="'.get_bloginfo('wpurl').'/wp-admin/admin.php?page=azrcrv-sic">'.esc_html__('Settings' ,'shortcodes-in-comments').'</a>';
+		array_unshift($links, $settings_link);
+	}
+
+	return $links;
+}
+
+/**
+ * Add to plugin menu.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_create_admin_menu(){
+	//global $admin_page_hooks;
+	
+	add_submenu_page("azrcrv-plugin-menu"
+						,esc_html__("Shortcodes in Comments Settings", "shortcodes-in-comments")
+						,esc_html__("Shortcodes in Comments", "shortcodes-in-comments")
+						,'manage_options'
+						,'azrcrv-sic'
+						,'azrcrv_sic_settings');
+}
+
+/**
+ * Display Settings page.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_settings(){
+	if (!current_user_can('manage_options')){
+		$error = new WP_Error('not_found', esc_html__('You do not have sufficient permissions to access this page.' , 'shortcodes-in-comments'), array('response' => '200'));
+		if(is_wp_error($error)){
+			wp_die($error, '', $error->get_error_data());
+		}
+	}
+	
+	// Retrieve plugin configuration options from database
+	$options = get_option('azrcrv-sic');
+	?>
+	
+	<div id="azrcrv-sic-general" class="wrap">
+		<fieldset>
+			<h2><?php echo esc_html(get_admin_page_title()); ?></h2>
+			<?php if(isset($_GET['settings-updated'])){ ?>
+				<div class="notice notice-success is-dismissible">
+					<p><strong><?php esc_html_e('Settings have been saved.', 'shortcodes-in-comments'); ?></strong></p>
+				</div>
+			<?php } ?>
+			
+			<form method="post" action="admin-post.php">
+				<input type="hidden" name="action" value="azrcrv_sic_save_options" />
+				<input name="page_options" type="hidden" value="use-network,allowed-shortcodes" />
+				
+				<!-- Adding security through hidden referrer field -->
+				<?php wp_nonce_field('azrcrv-sic', 'azrcrv-sic-nonce'); ?>
+				
+				<table class="form-table">
+				
+				<tr><th scope="row" colspan=2>
+					<?php esc_html_e('This plugin allows shortcodes to be used in comments.', 'shortcodes-in-comments'); ?>
+				</th></tr>
+				
+				<?php
+					if (!get_site_option('azrcrv-sic')){
+				?>
+				<tr><th scope="row"><?php esc_html_e('Use Network Settings', 'shortcodes-in-comments'); ?></th><td>
+					<fieldset><legend class="screen-reader-text"><span>Use Network Settings</span></legend>
+					<label for="use-network"><input name="use-network" type="checkbox" id="use_network" value="1" <?php checked('1', $options['use-network']); ?> /><?php esc_html_e('Settings below will be ignored in preference of network settings', 'shortcodes-in-comments'); ?></label>
+					</fieldset>
+				</td></tr>
+				<?php
+				}
+				?>	
+				
+				<tr><th scope="row"><?php esc_html_e('Allowed Shortcodes', 'shortcodes-in-comments'); ?></th><td>
+					<textarea name="allowed-shortcodes" rows="10" cols="50" id="allowed-shortcodes" class="large-text code"><?php echo esc_textarea(stripslashes($options['allowed-shortcodes'])) ?></textarea>
+					<p class="description"><?php esc_html_e('Enter shortcodes, separated by commas, which are to be allowed in comments.', 'shortcodes-in-comments'); ?></em>
+					</p>
+				</td></tr>
+				
+				<tr><th scope="row">&nbsp;</th>
+				<td>
+					azurecurve <?php esc_html_e('has a sister plugin to this one which allows shortcodes to be used in widgets:', 'shortcodes-in-comments'); ?>
+					<ul class='azrcrv-plugin-index'>
+						<li>
+							<?php
+							if (azrcrv_sic_is_plugin_active('azrcrv-shortcodes-in-widgets/azrcrv-shortcodes-in-widgets.php')){
+								echo "<a href='admin.php?page=azrcrv-sic' class='azrcrv-plugin-index'>Shortcodes in Widgets</a>";
+							}else{
+								echo "<a href='https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-widgets/' class='azrcrv-plugin-index'>Shortcodes in Widgets</a>";
+							}
+							?>
+						</li>
+					</ul>
+				</td></tr>
+				
+				</table>
+				
+				<input type="submit" value="Save Changes" class="button-primary" />
+			</form>
+		</fieldset>
+	</div>
+	<?php
+}
+
+/**
+ * Save settings.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_save_options(){
+	// Check that user has proper security level
+	if (!current_user_can('manage_options')){
+		wp_die(esc_html__('You do not have permissions to perform this action', 'shortcodes-in-comments'));
+	}
+	// Check that nonce field created in configuration form is present
+	if (! empty($_POST) && check_admin_referer('azrcrv-sic', 'azrcrv-sic-nonce')){
+	
+		// Retrieve original plugin options array
+		$options = get_option('azrcrv-sic');
+		
+		$option_name = 'use-network';
+		if (isset($_POST[$option_name])){
+			$options[$option_name] = 1;
+		}else{
+			$options[$option_name] = 0;
+		}
+	
+		$option_name = 'allowed-shortcodes';
+		if (isset($_POST[$option_name])){
+			$options[$option_name] = implode("\n", array_map('sanitize_text_field', explode("\n", $_POST[$option_name])));
+		}
+		
+		// Store updated options array to database
+		update_option('azrcrv-sic', $options);
+		
+		// Redirect the page to the configuration form that was processed
+		wp_redirect(add_query_arg('page', 'azrcrv-sic&settings-updated', admin_url('admin.php')));
+		exit;
+	}
+}
+
+/**
+ * Add to Network menu.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_create_network_admin_menu(){
+	if (function_exists('is_multisite') && is_multisite()){
+		add_submenu_page(
+						'settings.php'
+						,esc_html__("Shortcodes in Comments Settings", "shortcodes-in-comments")
+						,esc_html__("Shortcodes in Comments", "shortcodes-in-comments")
+						,'manage_network_options'
+						,'azrcrv-sic'
+						,'azrcrv_sic_network_settings'
+						);
+	}
+}
+
+/**
+ * Display network settings.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_network_settings(){
+	if (!current_user_can('manage_options')){
+		$error = new WP_Error('not_found', esc_html__('You do not have sufficient permissions to access this page.' , 'azrcrv-rssf'), array('response' => '200'));
+		if(is_wp_error($error)){
+			wp_die($error, '', $error->get_error_data());
+		}
+	}
+	
+	// Retrieve plugin configuration options from database
+	$options = get_site_option('azrcrv-sic');
+	?>
+	
+	<div id="azrcrv-sic-general" class="wrap">
+		<fieldset>
+			<h2><?php echo esc_html(get_admin_page_title()); ?></h2>
+			<?php if(isset($_GET['settings-updated'])){ ?>
+				<div class="notice notice-success is-dismissible">
+					<p><strong><?php esc_html_e('Settings have been saved.', 'shortcodes-in-comments'); ?></strong></p>
+				</div>
+			<?php } ?>
+			
+			<form method="post" action="admin-post.php">
+				<input type="hidden" name="action" value="azrcrv_sic_save_network_options" />
+				<input name="page_options" type="hidden" value="allowed-shortcodes" />
+				
+				<!-- Adding security through hidden referrer field -->
+				<?php wp_nonce_field('azrcrv-sic', 'azrcrv-sic-nonce'); ?>
+				
+				<table class="form-table">
+				
+				<tr><th scope="row" colspan=2>
+					<?php esc_html_e('This plugin allows shortcodes to be used in comments.', 'shortcodes-in-comments'); ?>
+				</th></tr>
+				
+				<tr><th scope="row"><?php esc_html_e('Allowed Shortcodes', 'shortcodes-in-comments'); ?></th><td>
+					<textarea name="allowed-shortcodes" rows="10" cols="50" id="allowed-shortcodes" class="large-text code"><?php echo esc_textarea(stripslashes($options['allowed-shortcodes'])) ?></textarea>
+					<p class="description"><?php esc_html_e('Enter shortcodes, separated by commas, which are to be allowed in comments.', 'shortcodes-in-comments'); ?></em>
+					</p>
+				</td></tr>
+				
+				<tr><th scope="row" colspan=2>
+					azurecurve <?php esc_html_e('has a sister plugin to this one which allows shortcodes to be used in widgets:', 'shortcodes-in-comments'); ?>
+					<ul class='azrcrv-plugin-index'>
+						<li>
+							<?php
+							if (azrcrv_sic_is_plugin_active('azrcrv-shortcodes-in-widgets/azrcrv-shortcodes-in-widgets.php')){
+								echo "<a href='admin.php?page=azrcrv-sic' class='azrcrv-plugin-index'>Shortcodes in Widgets</a>";
+							}else{
+								echo "<a href='https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-widgets/' class='azrcrv-plugin-index'>Shortcodes in Widgets</a>";
+							}
+							?>
+						</li>
+					</ul>
+				</th></tr>
+				
+				<input type="submit" value="Save Changes" class="button-primary"/>
+			</form>
+		</fieldset>
+	</div>
+	<?php
+}
+
+/**
+ * Save network settings.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_save_network_options(){     
+	if(!current_user_can('manage_network_options')){
+		wp_die(esc_html__('You do not have permissions to perform this action', 'shortcodes-in-comments'));
+	}
+	
+	if (! empty($_POST) && check_admin_referer('azrcrv-sic', 'azrcrv-sic-nonce')){
+		// Retrieve original plugin options array
+		$options = get_site_option('azrcrv-sic');
+	
+		$option_name = 'allowed-shortcodes';
+		if (isset($_POST[$option_name])){
+			$options[$option_name] = implode("\n", array_map('sanitize_text_field', explode("\n", $_POST[$option_name])));
+		}
+		
+		update_site_option('azrcrv-sic', $options);
+
+		wp_redirect(network_admin_url('settings.php?page=azrcrv-sic&settings-updated'));
+		exit;  
+	}
+}
+
+/**
+ * Check if function active (included due to standard function failing due to order of load).
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_is_plugin_active($plugin){
+    return in_array($plugin, (array) get_option('active_plugins', array()));
+}
+
+/**
+ * Remove shortcodes which haven't been allowed.
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_remove_unallowed_shortcodes(){
+	// get registered shortcodes
+	global $shortcode_tags;
+	// create temp global shortcodes variable
+	global $azrcrv_sic_shortcode_tags;
+	// backup registered shortcodes into temp global shortcodes variable
+	$azrcrv_sic_shortcode_tags = $shortcode_tags;
+	
+	// get site options
+	$options = get_option('azrcrv-sic');
+	if ($options['use-network'] == 1){
+		// if using network options, get network options
+		$options = get_site_option('azrcrv-sic');
+	}
+	
+	//explode allowed-shortcodes from options into array
+	$allowed_shortcodes = explode(',', $options['allowed-shortcodes']);
+	// loop through registered shortcodes
+	foreach ($shortcode_tags as $shortcode => $func){
+		// check if shortcode is allowed
+		if (!in_array($shortcode, $allowed_shortcodes)){
+			// if shortcode not allowed, remove it
+			remove_shortcode($shortcode);
+		}
+	}
+
+}
+
+/**
+ * Restore registered shortcodes; called after comments, but before sidebar is displayed
+ *
+ * @since 1.0.0
+ *
+ */
+function azrcrv_sic_restore_all_shortcodes() {
+	
+	global $shortcode_tags;
+	global $azrcrv_sic_shortcode_tags;
+
+	if (!empty($azrcrv_sic_shortcode_tags)) {
+		$shortcode_tags = $azrcrv_sic_shortcode_tags;
+		unset($azrcrv_sic_restore_all_shortcodes);
+	}
+}
+
+?>
