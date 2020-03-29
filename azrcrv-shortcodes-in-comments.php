@@ -3,10 +3,10 @@
  * ------------------------------------------------------------------------------
  * Plugin Name: Shortcodes in Comments
  * Description: Allows shortcodes to be used in comments
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: azurecurve
  * Author URI: https://development.azurecurve.co.uk/classicpress-plugins/
- * Plugin URI: https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-comments
+ * Plugin URI: https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-comments/
  * Text Domain: shortcodes-in-comments
  * Domain Path: /languages
  * ------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ function azrcrv_sic_add_plugin_action_link($links, $file){
 	}
 
 	if ($file == $this_plugin){
-		$settings_link = '<a href="'.get_bloginfo('wpurl').'/wp-admin/admin.php?page=azrcrv-sic">'.esc_html__('Settings' ,'shortcodes-in-comments').'</a>';
+		$settings_link = '<a href="'.get_bloginfo('wpurl').'/wp-admin/admin.php?page=azrcrv-sic"><img src="'.plugins_url('/pluginmenu/images/Favicon-16x16.png', __FILE__).'" style="padding-top: 2px; margin-right: -5px; height: 16px; width: 16px;" alt="azurecurve" />'.esc_html__('Settings' ,'shortcodes-in-comments').'</a>';
 		array_unshift($links, $settings_link);
 	}
 
@@ -215,7 +215,7 @@ function azrcrv_sic_settings(){
 						<li>
 							<?php
 							if (azrcrv_sic_is_plugin_active('azrcrv-shortcodes-in-widgets/azrcrv-shortcodes-in-widgets.php')){
-								echo "<a href='admin.php?page=azrcrv-sic' class='azrcrv-plugin-index'>Shortcodes in Widgets</a>";
+								echo "<a href='admin.php?page=azrcrv-siw' class='azrcrv-plugin-index'>Shortcodes in Widgets</a>";
 							}else{
 								echo "<a href='https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-widgets/' class='azrcrv-plugin-index'>Shortcodes in Widgets</a>";
 							}
