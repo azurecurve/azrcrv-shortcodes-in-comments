@@ -3,7 +3,7 @@
  * ------------------------------------------------------------------------------
  * Plugin Name: Shortcodes in Comments
  * Description: Allows shortcodes to be used in comments
- * Version: 1.1.4
+ * Version: 1.2.0
  * Author: azurecurve
  * Author URI: https://development.azurecurve.co.uk/classicpress-plugins/
  * Plugin URI: https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-comments/
@@ -36,7 +36,6 @@ require_once(dirname(__FILE__).'/libraries/updateclient/UpdateClient.class.php')
  *
  */
 // add actions
-add_action('admin_init', 'azrcrv_sic_set_default_options');
 add_action('admin_menu', 'azrcrv_sic_create_admin_menu');
 add_action('admin_post_azrcrv_sic_save_options', 'azrcrv_sic_save_options');
 add_action('network_admin_menu', 'azrcrv_sic_create_network_admin_menu');
@@ -46,9 +45,10 @@ add_action('plugins_loaded', 'azrcrv_sic_load_languages');
 // add filters
 add_filter('plugin_action_links', 'azrcrv_sic_add_plugin_action_link', 10, 2);
 add_filter('comments_template', 'azrcrv_sic_remove_unallowed_shortcodes');
-//add_filter('comment_text', 'shortcode_unautop');
 add_filter('comment_text', 'do_shortcode');
 add_filter('dynamic_sidebar', 'azrcrv_sic_restore_all_shortcodes');
+add_filter('codepotent_update_manager_image_path', 'azrcrv_sic_custom_image_path');
+add_filter('codepotent_update_manager_image_url', 'azrcrv_sic_custom_image_url');
 
 /**
  * Load language files.
@@ -62,98 +62,49 @@ function azrcrv_sic_load_languages() {
 }
 
 /**
- * Set default options for plugin.
+ * Custom plugin image path.
  *
- * @since 1.0.0
- *
- */
-function azrcrv_sic_set_default_options($networkwide){
-	
-	$option_name = 'azrcrv-sic';
-	
-	$new_options = array(
-				'allowed-shortcodes' => 'b,i,u,center,centre,strike,quote,color,size,img,url,link,ol,ul,li,code',
-						'updated' => strtotime('2020-04-04'),
-			);
-	
-	// set defaults for multi-site
-	if (function_exists('is_multisite') && is_multisite()){
-		// check if it is a network activation - if so, run the activation function for each blog id
-		if ($networkwide){
-			global $wpdb;
-
-			$blog_ids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
-			$original_blog_id = get_current_blog_id();
-
-			foreach ($blog_ids as $blog_id){
-				switch_to_blog($blog_id);
-				
-				azrcrv_sic_update_options($option_name, $new_options, false);
-			}
-
-			switch_to_blog($original_blog_id);
-		}else{
-			azrcrv_sic_update_options( $option_name, $new_options, false);
-		}
-		if (get_site_option($option_name) === false){
-			azrcrv_sic_update_options($option_name, $new_options, true);
-		}
-	}
-	//set defaults for single site
-	else{
-		azrcrv_sic_update_options($option_name, $new_options, false);
-	}
-}
-
-/**
- * Update options.
- *
- * @since 1.1.3
+ * @since 1.2.0
  *
  */
-function azrcrv_sic_update_options($option_name, $new_options, $is_network_site){
-	if ($is_network_site == true){
-		if (get_site_option($option_name) === false){
-			add_site_option($option_name, $new_options);
-		}else{
-			$options = get_site_option($option_name);
-			if (!isset($options['updated']) OR $options['updated'] < $new_options['updated'] ){
-				$options['updated'] = $new_options['updated'];
-				update_site_option($option_name, azrcrv_sic_update_default_options($options, $new_options));
-			}
-		}
-	}else{
-		if (get_option($option_name) === false){
-			add_option($option_name, $new_options);
-		}else{
-			$options = get_option($option_name);
-			if (!isset($options['updated']) OR $options['updated'] < $new_options['updated'] ){
-				$options['updated'] = $new_options['updated'];
-				update_option($option_name, azrcrv_sic_update_default_options($options, $new_options));
-			}
-		}
-	}
-}
-
-
-/**
- * Add default options to existing options.
- *
- * @since 1.1.3
- *
- */
-function azrcrv_sic_update_default_options( &$default_options, $current_options ) {
-    $default_options = (array) $default_options;
-    $current_options = (array) $current_options;
-    $updated_options = $current_options;
-    foreach ($default_options as $key => &$value) {
-        if (is_array( $value) && isset( $updated_options[$key])){
-            $updated_options[$key] = azrcrv_sic_update_default_options($value, $updated_options[$key]);
-        } else {
-			$updated_options[$key] = $value;
-        }
+function azrcrv_sic_custom_image_path($path){
+    if (strpos($path, 'azrcrv-shortcodes-in-comments') !== false){
+        $path = plugin_dir_path(__FILE__).'assets/pluginimages';
     }
-    return $updated_options;
+    return $path;
+}
+
+/**
+ * Custom plugin image url.
+ *
+ * @since 1.2.0
+ *
+ */
+function azrcrv_sic_custom_image_url($url){
+    if (strpos($url, 'azrcrv-shortcodes-in-comments') !== false){
+        $url = plugin_dir_url(__FILE__).'assets/pluginimages';
+    }
+    return $url;
+}
+
+/**
+ * Get options including defaults.
+ *
+ * @since 1.2.0
+ *
+ */
+function azrcrv_sic_get_option($option_name){
+ 
+	$defaults = array(
+						'allowed-shortcodes' => 'b,i,u,center,centre,strike,quote,color,size,img,url,link,ol,ul,li,code',
+					);
+
+	$options = get_option($option_name, $defaults);
+
+	$options = wp_parse_args($options, $defaults);
+
+	return $options;
+
 }
 
 /**
@@ -170,7 +121,7 @@ function azrcrv_sic_add_plugin_action_link($links, $file){
 	}
 
 	if ($file == $this_plugin){
-		$settings_link = '<a href="'.get_bloginfo('wpurl').'/wp-admin/admin.php?page=azrcrv-sic"><img src="'.plugins_url('/pluginmenu/images/Favicon-16x16.png', __FILE__).'" style="padding-top: 2px; margin-right: -5px; height: 16px; width: 16px;" alt="azurecurve" />'.esc_html__('Settings' ,'shortcodes-in-comments').'</a>';
+		$settings_link = '<a href="'.admin_url('admin.php?page=azrcrv-sic').'"><img src="'.plugins_url('/pluginmenu/images/Favicon-16x16.png', __FILE__).'" style="padding-top: 2px; margin-right: -5px; height: 16px; width: 16px;" alt="azurecurve" />'.esc_html__('Settings' ,'shortcodes-in-comments').'</a>';
 		array_unshift($links, $settings_link);
 	}
 
