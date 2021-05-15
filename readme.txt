@@ -1,12 +1,12 @@
 === Shortcodes in Comments ===
 
 Description:	Allows shortcodes to be used in comments.
-Version:		1.2.0
+Version:		1.2.1
 Tags:			shortcode, shortcodes, comment, comments
 Author:			azurecurve
 Author URI:		https://development.azurecurve.co.uk/
 Plugin URI:		https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-comments/
-Download link:	https://github.com/azurecurve/azrcrv-shortcodes-in-comments/releases/download/v1.2.0/azrcrv-shortcodes-in-comments.zip
+Download link:	https://github.com/azurecurve/azrcrv-shortcodes-in-comments/releases/download/v1.2.1/azrcrv-shortcodes-in-comments.zip
 Donate link:	https://development.azurecurve.co.uk/support-development/
 Requires PHP:	5.6
 Requires:		1.0.0
@@ -49,6 +49,9 @@ This plugin is developed for ClassicPress, but will likely work on WordPress.
 
 # Changelog
 
+### [Version 1.2.1](https://github.com/azurecurve/azrcrv-shortcodes-in-comments/releases/tag/v1.2.1)
+ * Update azurecurve menu and logo.
+ 
 ### [Version 1.2.0](https://github.com/azurecurve/azrcrv-shortcodes-in-comments/releases/tag/v1.2.0)
  * Fix plugin action link to use admin_url() function.
  * Rewrite option handling so defaults not stored in database on plugin initialisation.
