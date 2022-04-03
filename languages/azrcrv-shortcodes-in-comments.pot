@@ -2,71 +2,71 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Shortcodes in Comments\n"
-"POT-Creation-Date: 2020-01-05 13:10+0000\n"
+"POT-Creation-Date: 2021-12-27 18:15+0000\n"
 "PO-Revision-Date: 2019-02-24 18:35+0000\n"
 "Last-Translator: \n"
-"Language-Team: https://translate.azurecurve.co.uk/\n"
+"Language-Team: translate@azurecurve.co.uk\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2.1\n"
-"X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;esc_html__;esc_html_e\n"
 "X-Poedit-SearchPath-0: azrcrv-shortcodes-in-comments.php\n"
 
-#: azrcrv-shortcodes-in-comments.php:113
+#: azrcrv-shortcodes-in-comments.php:124
 msgid "Settings"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:130 azrcrv-shortcodes-in-comments.php:268
+#: azrcrv-shortcodes-in-comments.php:141 azrcrv-shortcodes-in-comments.php:284
 msgid "Shortcodes in Comments Settings"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:131 azrcrv-shortcodes-in-comments.php:269
+#: azrcrv-shortcodes-in-comments.php:142 azrcrv-shortcodes-in-comments.php:285
 msgid "Shortcodes in Comments"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:145 azrcrv-shortcodes-in-comments.php:285
+#: azrcrv-shortcodes-in-comments.php:156 azrcrv-shortcodes-in-comments.php:301
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:160 azrcrv-shortcodes-in-comments.php:300
+#: azrcrv-shortcodes-in-comments.php:176 azrcrv-shortcodes-in-comments.php:321
 msgid "Settings have been saved."
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:174 azrcrv-shortcodes-in-comments.php:314
+#: azrcrv-shortcodes-in-comments.php:190 azrcrv-shortcodes-in-comments.php:335
 msgid "This plugin allows shortcodes to be used in comments."
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:180
+#: azrcrv-shortcodes-in-comments.php:196
 msgid "Use Network Settings"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:182
+#: azrcrv-shortcodes-in-comments.php:198
 msgid "Settings below will be ignored in preference of network settings"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:189 azrcrv-shortcodes-in-comments.php:317
+#: azrcrv-shortcodes-in-comments.php:205 azrcrv-shortcodes-in-comments.php:338
 msgid "Allowed Shortcodes"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:191 azrcrv-shortcodes-in-comments.php:319
+#: azrcrv-shortcodes-in-comments.php:207 azrcrv-shortcodes-in-comments.php:340
 msgid ""
 "Enter shortcodes, separated by commas, which are to be allowed in comments."
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:197 azrcrv-shortcodes-in-comments.php:324
+#: azrcrv-shortcodes-in-comments.php:213 azrcrv-shortcodes-in-comments.php:345
 msgid ""
 "has a sister plugin to this one which allows shortcodes to be used in "
 "widgets:"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:213
+#: azrcrv-shortcodes-in-comments.php:229
 msgid "Submit"
 msgstr ""
 
-#: azrcrv-shortcodes-in-comments.php:229 azrcrv-shortcodes-in-comments.php:353
+#: azrcrv-shortcodes-in-comments.php:245 azrcrv-shortcodes-in-comments.php:374
 msgid "You do not have permissions to perform this action"
 msgstr ""

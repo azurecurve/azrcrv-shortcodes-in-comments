@@ -3,7 +3,7 @@
  * ------------------------------------------------------------------------------
  * Plugin Name: Shortcodes in Comments
  * Description: Allows shortcodes to be used in comments
- * Version: 1.2.2
+ * Version: 1.2.3
  * Author: azurecurve
  * Author URI: https://development.azurecurve.co.uk/classicpress-plugins/
  * Plugin URI: https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-comments/
