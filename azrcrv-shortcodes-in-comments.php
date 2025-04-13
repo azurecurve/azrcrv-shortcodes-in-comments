@@ -3,8 +3,9 @@
  * ------------------------------------------------------------------------------
  * Plugin Name:		Shortcodes in Comments
  * Description:		Allows shortcodes to be used in comments
- * Version:			1.2.5
+ * Version:			1.2.6
  * Requires CP:		1.0
+ * Requires PHP:	7.4
  * Author:			azurecurve
  * Author URI:		https://development.azurecurve.co.uk/classicpress-plugins/
  * Plugin URI:		https://development.azurecurve.co.uk/classicpress-plugins/shortcodes-in-comments/
@@ -426,13 +427,15 @@ function azrcrv_sic_remove_unallowed_shortcodes(){
 	}
 	
 	//explode allowed-shortcodes from options into array
-	$allowed_shortcodes = explode(',', $options['allowed-shortcodes']);
-	// loop through registered shortcodes
-	foreach ($shortcode_tags as $shortcode => $func){
-		// check if shortcode is allowed
-		if (!in_array($shortcode, $allowed_shortcodes)){
-			// if shortcode not allowed, remove it
-			remove_shortcode($shortcode);
+	if ( $options and $options['allowed-shortcodes']) {
+		$allowed_shortcodes = explode(',', $options['allowed-shortcodes']);
+		// loop through registered shortcodes
+		foreach ($shortcode_tags as $shortcode => $func){
+			// check if shortcode is allowed
+			if (!in_array($shortcode, $allowed_shortcodes)){
+				// if shortcode not allowed, remove it
+				remove_shortcode($shortcode);
+			}
 		}
 	}
 
